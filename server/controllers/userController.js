@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const User = require('../models/user');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -11,7 +11,7 @@ const registerUser = async (req, res) => {
   try {
     const { nombre, email, password, rol, telefono, ubicacion, institucionEducativa } = req.body;
 
-    // CAMBIO AQUÍ: Se quita la validación obligatoria de ubicacion.localidad
+  
     if (!nombre || !email || !password) {
       return res.status(400).json({ message: 'Faltan campos obligatorios (nombre, email, password)' });
     }
