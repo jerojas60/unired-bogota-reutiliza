@@ -49,7 +49,7 @@ const createItem = async (req, res) => {
 // @route GET /api/items
 const getItems = async (req, res) => {
   try {
-    const { localidad, colegio, categoria, talla, estado, misSolicitudes, moderacion } = req.query;
+    const { localidad, colegio, categoria, talla, estado, misSolicitudes, misDonaciones, moderacion } = req.query;
 
     const filtros = {};
 
@@ -57,11 +57,15 @@ const getItems = async (req, res) => {
     if (misSolicitudes === 'true') {
       filtros.beneficiarioId = req.user._id;
     } 
-    // 2. Si la petición viene desde el panel de Moderación/Admin
+    // 2. Si la petición viene desde la vista "Mis Donaciones" del Donante
+    else if (misDonaciones === 'true') {
+      filtros.donanteId = req.user._id;
+    }
+    // 3. Si la petición viene desde el panel de Moderación/Admin
     else if (moderacion === 'true') {
       if (estado) filtros.estado = estado; // Permite filtrar por PENDIENTE, RECHAZADO, RESERVADO, ENTREGADO, etc.
     } 
-    // 3. Catálogo público por defecto
+    // 4. Catálogo público por defecto
     else {
       if (localidad) filtros.localidad = localidad;
       if (colegio) filtros['detalles.colegio'] = colegio;
@@ -73,28 +77,34 @@ const getItems = async (req, res) => {
     }
 
     const items = await Item.find(filtros)
-      .populate('donanteId', 'nombre ubicacion telefono')
+      .populate('donanteId', 'nombre ubicacion telefono email')
       .populate('beneficiarioId', 'nombre email')
       .sort({ createdAt: -1 });
 
-
-  const itemsFormateados = items.map(item => ({
-  _id: item._id,
-  title: item.titulo,
-  titulo: item.titulo,
-  category: item.categoria,
-  categoria: item.categoria,
-  localidad: item.localidad,
-  descripcion: item.descripcion,
-  talla: item.detalles?.talla || 'N/A', // <-- AGREGAR ESTO para que el frontend lo lea fácil
-  image: item.fotos && item.fotos.length > 0 ? item.fotos[0] : '',
-  fotos: item.fotos,
-  estado: item.estado,
-  detalles: item.detalles,
-  donanteId: item.donanteId,
-  beneficiarioId: item.beneficiarioId,
-  createdAt: item.createdAt
-}));
+    // Mapeamos cada documento asegurando compatibilidad total de propiedades con el frontend
+    const itemsFormateados = items.map(item => ({
+      _id: item._id,
+      id: item._id,
+      title: item.titulo,
+      titulo: item.titulo,
+      category: item.categoria,
+      categoria: item.categoria,
+      localidad: item.localidad,
+      locality: item.localidad,
+      description: item.descripcion,
+      descripcion: item.descripcion,
+      size: item.detalles?.talla || 'N/A',
+      talla: item.detalles?.talla || 'N/A',
+      image: item.fotos && item.fotos.length > 0 ? item.fotos[0] : '',
+      fotos: item.fotos,
+      estado: item.estado,
+      detalles: item.detalles,
+      comentarioEntrega: item.comentarioEntrega || '',
+      comentarioRechazo: item.comentarioRechazo || '',
+      donanteId: item.donanteId,
+      beneficiarioId: item.beneficiarioId,
+      createdAt: item.createdAt
+    }));
 
     return res.status(200).json(itemsFormateados);
   } catch (error) {
@@ -129,9 +139,9 @@ const updateItemStatus = async (req, res) => {
 
     let itemActualizado;
 
-    // Si la intención es RESERVAR, aplicamos la regla de anti-acaparamiento y validación atómica
+    // Si la intención explícita es RESERVAR (por parte del beneficiario)
     if (estado === 'RESERVADO') {
-      // 1. Validar que el beneficiario no tenga más de 3 insumos activos o entregados (Límite semestral)
+      // 1. Validar límite de 3 insumos activos o entregados por periodo académico
       const reservasActivas = await Item.countDocuments({
         beneficiarioId: req.user._id,
         estado: { $in: ['RESERVADO', 'ENTREGADO'] }
@@ -143,7 +153,7 @@ const updateItemStatus = async (req, res) => {
         });
       }
 
-      // 2. Reserva atómica: solo si sigue disponible en este microsegundo
+      // 2. Reserva atómica: solo si sigue disponible
       itemActualizado = await Item.findOneAndUpdate(
         { _id: id, estado: 'DISPONIBLE' },
         { 
@@ -159,10 +169,11 @@ const updateItemStatus = async (req, res) => {
         });
       }
     } else {
-      // Para otros cambios (Aprobar a DISPONIBLE, RECHAZADO con comentario, ENTREGADO, etc.)
-      const updateData = { estado };
-      if (comentarioRechazo) updateData.comentarioRechazo = comentarioRechazo;
-      if (comentarioEntrega) updateData.comentarioEntrega = comentarioEntrega;
+      // Para otros cambios (Aprobar, Rechazar, o que el donante agregue el comentario de entrega)
+      const updateData = {};
+      if (estado) updateData.estado = estado;
+      if (comentarioRechazo !== undefined) updateData.comentarioRechazo = comentarioRechazo;
+      if (comentarioEntrega !== undefined) updateData.comentarioEntrega = comentarioEntrega;
 
       itemActualizado = await Item.findByIdAndUpdate(id, updateData, { new: true });
       
@@ -171,10 +182,11 @@ const updateItemStatus = async (req, res) => {
       }
     }
 
-    // Actualizamos el historial de trazabilidad automáticamente
+    // Actualizamos el historial de trazabilidad automáticamente si hubo cambio de estado o acción relevante
+    const estadoTrazabilidad = estado || itemActualizado.estado;
     await DonationTrace.findOneAndUpdate(
       { itemId: id },
-      { $push: { historialEstados: { estado, fecha: new Date() } } },
+      { $push: { historialEstados: { estado: estadoTrazabilidad, fecha: new Date() } } },
       { upsert: true }
     );
 
