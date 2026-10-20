@@ -4,15 +4,20 @@ const DonationTrace = require('../models/DonationTrace');
 // @route POST /api/items
 const createItem = async (req, res) => {
   try {
-    // 🛠️ Cambiamos 'locality' por 'localidad' para que coincida con el formulario
-    const { title, category, size, localidad, description, image } = req.body;
+    // Capturamos los campos permitiendo que vengan con el nombre en inglés o en español
+    const title = req.body.title || req.body.titulo;
+    const category = req.body.category || req.body.categoria;
+    const size = req.body.size || req.body.talla;
+    const localidad = req.body.localidad || req.body.locality;
+    const description = req.body.description || req.body.descripcion;
+    const image = req.body.image || req.body.foto;
 
-    // Validamos los campos esenciales usando la variable correcta
+    // Validamos los campos esenciales
     if (!title || !category || !localidad) {
       return res.status(400).json({ message: 'Faltan campos obligatorios (title, category, localidad)' });
     }
 
-    // Creamos el insumo adaptándolo a la estructura de la base de datos
+    // Creamos el insumo en la base de datos
     const item = await Item.create({
       donanteId: req.user._id,
       titulo: title,
@@ -23,7 +28,7 @@ const createItem = async (req, res) => {
       },
       descripcion: description || '',
       fotos: image ? [image] : [],
-      localidad, // Aquí ya usará la variable correcta
+      localidad,
       estado: 'PENDIENTE'
     });
 
