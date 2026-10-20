@@ -10,7 +10,7 @@ const ItemSchema = new Schema({
   beneficiarioId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    default: null, // Guarda el ID del estudiante que solicita/reserva el insumo
+    default: null,
   },
   titulo: {
     type: String,
@@ -26,7 +26,6 @@ const ItemSchema = new Schema({
     type: String,
     required: [true, 'La categoría es obligatoria'],
     trim: true,
-  
   },
   detalles: {
     genero: {
@@ -45,7 +44,11 @@ const ItemSchema = new Schema({
     },
     colegio: {
       type: String,
-      default: 'Comunidad UniRed', // Valor por defecto para que nunca falle si el formulario no lo envía
+      default: 'Comunidad UniRed',
+    },
+    instruccionesRecogida: { // 🌟 AÑADIDO PARA QUE MONGOOSE NO LO FILTRE
+      type: String,
+      default: '',
     },
   },
   fotos: {
@@ -60,15 +63,15 @@ const ItemSchema = new Schema({
   estado: {
     type: String,
     enum: ['PENDIENTE', 'DISPONIBLE', 'RECHAZADO', 'RESERVADO', 'ENTREGADO'],
-    default: 'PENDIENTE', // Inicia en PENDIENTE para que pase primero por la moderación del admin
+    default: 'PENDIENTE',
   },
   comentarioRechazo: {
     type: String,
-    default: '', // Motivo que escribe el admin si rechaza el insumo
+    default: '',
   },
   comentarioEntrega: {
     type: String,
-    default: '', // Instrucciones del donante sobre dónde y cuándo recoger
+    default: '',
   },
   createdAt: {
     type: Date,
@@ -76,7 +79,6 @@ const ItemSchema = new Schema({
   },
 });
 
-// ÍNDICE COMPUESTO: Optimiza las consultas del catálogo por filtros combinados
 ItemSchema.index({ localidad: 1, 'detalles.colegio': 1, estado: 1 });
 
 module.exports = mongoose.model('Item', ItemSchema);

@@ -18,15 +18,16 @@ const createItem = async (req, res) => {
       return res.status(400).json({ message: 'Faltan campos obligatorios (title, category, localidad)' });
     }
 
-    const item = await Item.create({
+const item = await Item.create({
       donanteId: req.user._id,
       titulo: title,
       categoria: category,
       detalles: {
         talla: size || 'N/A',
         colegio: 'Comunidad UniRed',
-        instruccionesRecogida: instruccionesRecogida // 🌟 Se guarda aquí dentro de detalles
+        instruccionesRecogida: instruccionesRecogida
       },
+      comentarioEntrega: instruccionesRecogida, 
       descripcion: description || '',
       fotos: image ? [image] : [],
       localidad,
