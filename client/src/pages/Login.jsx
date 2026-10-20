@@ -14,7 +14,7 @@ export default function Login() {
 
     try {
       // Petición al backend real (en producción apuntará a tu servidor desplegado o URL correcta)
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch('https://unired-backend.onrender.com/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
