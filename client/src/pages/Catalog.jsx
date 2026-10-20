@@ -54,7 +54,7 @@ export default function Catalog() {
   ];
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/items')
+    fetch('http://https://unired-backend.onrender.com/api/items')
       .then((res) => res.json())
       .then((data) => setItems(data.length ? data : sampleItems))
       .catch(() => setItems(sampleItems));
@@ -83,7 +83,7 @@ export default function Catalog() {
   const handleConfirmRequest = async () => {
     const token = localStorage.getItem('token');
     try {
-      await fetch(`http://localhost:5000/api/items/${selectedItem._id}/status`, {
+      await fetch(`http://https://unired-backend.onrender.com/api/items/${selectedItem._id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
