@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { MapPin, Search, Eye, CheckCircle, Package, X } from 'lucide-react';
 
 export default function Catalog() {
@@ -20,52 +20,33 @@ export default function Catalog() {
     'CIUDAD BOLÍVAR', 'SUMAPAZ'
   ];
 
-  const sampleItems = [
-    { 
-      _id: '1', 
-      title: 'Uniforme Diario Colegio Restrepo', 
-      category: 'Uniforme', 
-      size: 'Talla 12', 
-      locality: 'SUBA', 
-      status: 'Disponible',
-      description: 'Chaqueta y pantalón en excelente estado, sin desgaste.',
-      image: 'https://images.unsplash.com/photo-1576402187878-974f70c890a5?w=500&q=80'
-    },
-    { 
-      _id: '2', 
-      title: 'Kit de Cuadernos y Colores', 
-      category: 'Útiles', 
-      size: 'N/A', 
-      locality: 'KENNEDY', 
-      status: 'Disponible',
-      description: '5 cuadernos cuadriculados de 100 hojas y caja de colores nueva.',
-      image: 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=500&q=80'
-    },
-    { 
-      _id: '3', 
-      title: 'Sudadera Deportiva Talla 14', 
-      category: 'Uniforme', 
-      size: 'Talla 14', 
-      locality: 'ENGATIVÁ', 
-      status: 'Disponible',
-      description: 'Sudadera completa color azul oscuro, cremallera funcional.',
-      image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=500&q=80'
-    }
-  ];
-
+  // 🌟 ELIMINAMOS 'sampleItems' por completo. Ahora solo trae datos reales de la BD.
   useEffect(() => {
     fetch('https://unired-backend.onrender.com/api/items')
       .then((res) => res.json())
-      .then((data) => setItems(data.length ? data : sampleItems))
-      .catch(() => setItems(sampleItems));
+      .then((data) => {
+        setItems(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        console.error('Error al cargar catálogo:', err);
+        setItems([]);
+      });
   }, []);
 
   const filteredItems = items.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = !category || item.category === category;
-    const matchesLocality = !locality || item.locality.toUpperCase() === locality.toUpperCase();
-    const isAvailable = item.status !== 'Reservado' && item.status !== 'Entregado' && item.status !== 'Pendiente';
+    const itemTitle = item.title || item.titulo || '';
+    const itemDesc = item.description || item.descripcion || '';
+    const itemCat = item.category || item.categoria || '';
+    const itemLoc = item.locality || item.localidad || '';
+    const itemEstado = item.estado || item.status || 'DISPONIBLE';
+
+    const matchesSearch = itemTitle.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          itemDesc.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !category || itemCat === category;
+    const matchesLocality = !locality || itemLoc.toUpperCase() === locality.toUpperCase();
+    
+    // Solo mostramos ítems cuyo estado sea DISPONIBLE
+    const isAvailable = itemEstado === 'DISPONIBLE';
     
     return matchesSearch && matchesCategory && matchesLocality && isAvailable;
   });
@@ -83,7 +64,7 @@ export default function Catalog() {
   const handleConfirmRequest = async () => {
     const token = localStorage.getItem('token');
     try {
-      await fetch(`https://unired-backend.onrender.com/api/items/${selectedItem._id}/status`, {
+      const res = await fetch(`https://unired-backend.onrender.com/api/items/${selectedItem._id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -91,19 +72,31 @@ export default function Catalog() {
         },
         body: JSON.stringify({ estado: 'RESERVADO' })
       });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || 'No se pudo reservar el insumo.');
+        setSelectedItem(null);
+        return;
+      }
+
+      setRequested(true);
+      setItems(prevItems => prevItems.map(i => 
+        i._id === selectedItem._id ? { ...i, estado: 'RESERVADO' } : i
+      ));
+
+      setTimeout(() => {
+        setRequested(false);
+        setSelectedItem(null);
+        navigate('/mis-solicitudes');
+      }, 2000);
+
     } catch (err) {
-      console.log('Error de conexión');
-    }
-
-    setRequested(true);
-    setItems(prevItems => prevItems.map(i => 
-      i._id === selectedItem._id ? { ...i, status: 'Reservado' } : i
-    ));
-
-    setTimeout(() => {
-      setRequested(false);
+      console.error(err);
+      alert('Error de conexión con el servidor.');
       setSelectedItem(null);
-    }, 2000);
+    }
   };
 
   return (
@@ -145,18 +138,18 @@ export default function Catalog() {
           filteredItems.map((item) => (
             <div key={item._id} style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div style={{ width: '100%', height: '180px', backgroundColor: '#f1f5f9', position: 'relative' }}>
-                <img src={item.image || 'https://via.placeholder.com/300x180?text=Sin+Imagen'} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={item.image || item.fotos?.[0] || 'https://via.placeholder.com/300x180?text=Sin+Imagen'} alt={item.title || item.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <span style={{ position: 'absolute', top: '10px', right: '10px', backgroundColor: '#dcfce7', color: '#166534', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                  {item.category}
+                  {item.category || item.categoria}
                 </span>
               </div>
 
               <div style={{ padding: '16px', flex: 1 }}>
                 <div style={{ fontSize: '0.8rem', color: '#475569', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px', fontWeight: '600' }}>
-                  <MapPin size={14} color="#2563eb" /> Localidad: <strong>{item.locality}</strong>
+                  <MapPin size={14} color="#2563eb" /> Localidad: <strong>{item.locality || item.localidad}</strong>
                 </div>
-                <h3 style={{ margin: '4px 0 8px 0', color: '#0f172a', fontSize: '1.1rem' }}>{item.title}</h3>
-                <p style={{ fontSize: '0.875rem', color: '#475569', margin: 0 }}>Especificación: <strong>{item.size}</strong></p>
+                <h3 style={{ margin: '4px 0 8px 0', color: '#0f172a', fontSize: '1.1rem' }}>{item.title || item.titulo}</h3>
+                <p style={{ fontSize: '0.875rem', color: '#475569', margin: 0 }}>Especificación: <strong>{item.size || item.talla || item.detalles?.talla || 'N/A'}</strong></p>
               </div>
 
               <div style={{ padding: '0 16px 16px 16px', display: 'flex', gap: '8px' }}>
@@ -189,11 +182,11 @@ export default function Catalog() {
             <button onClick={() => setDetailItem(null)} style={{ position: 'absolute', top: '12px', right: '12px', border: 'none', background: 'transparent', cursor: 'pointer' }}>
               <X size={20} color="#64748b" />
             </button>
-            <img src={detailItem.image} alt={detailItem.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px' }} />
-            <h2 style={{ marginTop: 0, color: '#0f172a' }}>{detailItem.title}</h2>
-            <p style={{ color: '#334155', fontSize: '0.95rem', lineHeight: '1.5' }}><strong>Descripción:</strong> {detailItem.description || 'Sin descripción detallada.'}</p>
-            <p style={{ color: '#334155', fontSize: '0.95rem' }}><strong>Talla/Medida:</strong> {detailItem.size}</p>
-            <p style={{ color: '#334155', fontSize: '0.95rem' }}><strong>Localidad:</strong> {detailItem.locality}</p>
+            <img src={detailItem.image || detailItem.fotos?.[0] || 'https://via.placeholder.com/300x180?text=Sin+Imagen'} alt={detailItem.title || detailItem.titulo} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px' }} />
+            <h2 style={{ marginTop: 0, color: '#0f172a' }}>{detailItem.title || detailItem.titulo}</h2>
+            <p style={{ color: '#334155', fontSize: '0.95rem', lineHeight: '1.5' }}><strong>Descripción:</strong> {detailItem.description || detailItem.descripcion || 'Sin descripción detallada.'}</p>
+            <p style={{ color: '#334155', fontSize: '0.95rem' }}><strong>Talla/Medida:</strong> {detailItem.size || detailItem.talla || detailItem.detalles?.talla || 'N/A'}</p>
+            <p style={{ color: '#334155', fontSize: '0.95rem' }}><strong>Localidad:</strong> {detailItem.locality || detailItem.localidad}</p>
             
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
               <button onClick={() => setDetailItem(null)} style={{ padding: '10px 18px', borderRadius: '6px', border: '1px solid #94a3b8', backgroundColor: '#e2e8f0', color: '#0f172a', fontWeight: 'bold', cursor: 'pointer' }}>
@@ -214,7 +207,7 @@ export default function Catalog() {
               <>
                 <h3 style={{ marginTop: 0, color: '#0f172a' }}>Confirmar Solicitud de Insumo</h3>
                 <p style={{ color: '#334155', fontSize: '0.95rem', lineHeight: '1.4' }}>
-                  ¿Deseas solicitar <strong>{selectedItem.title}</strong>? El insumo se ocultará del catálogo público para evitar solicitudes duplicadas.
+                  ¿Deseas solicitar <strong>{selectedItem.title || selectedItem.titulo}</strong>? El insumo se apartará para ti y podrás consultar las instrucciones de entrega en tu sección de solicitudes.
                 </p>
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
                   <button onClick={() => setSelectedItem(null)} style={{ padding: '10px 18px', borderRadius: '6px', border: '1px solid #64748b', backgroundColor: '#f1f5f9', color: '#0f172a', fontWeight: 'bold', cursor: 'pointer' }}>
@@ -229,7 +222,7 @@ export default function Catalog() {
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
                 <CheckCircle size={52} color="#16a34a" style={{ margin: '0 auto 12px auto' }} />
                 <h3 style={{ margin: 0, color: '#16a34a' }}>¡Solicitud Registrada!</h3>
-                <p style={{ fontSize: '0.9rem', color: '#475569' }}>El artículo ha sido apartado y ocultado del catálogo.</p>
+                <p style={{ fontSize: '0.9rem', color: '#475569' }}>Redirigiendo a "Mis Solicitudes" para ver las instrucciones de recogida...</p>
               </div>
             )}
           </div>
