@@ -23,12 +23,15 @@ export default function Login() {
       if (response.ok) {
         const data = await response.json();
         
-        // Guardar credenciales retornadas por el Servidor
+        // Guardamos las credenciales unificadas para que el Navbar las reconozca de inmediato
         localStorage.setItem('token', data.token);
-        localStorage.setItem('userEmail', data.user.email);
-        localStorage.setItem('userRole', data.user.role); // 'admin' o 'user'
+        const userObj = {
+          email: data.user.email,
+          role: (data.user.role === 'admin' || data.user.email === 'admin@unired.edu.co') ? 'ADMIN' : 'USER'
+        };
+        localStorage.setItem('user', JSON.stringify(userObj));
 
-        if (data.user.role === 'admin' || data.user.email === 'admin@unired.edu.co') {
+        if (userObj.role === 'ADMIN') {
           navigate('/admin');
         } else {
           navigate('/');
@@ -42,14 +45,12 @@ export default function Login() {
     // SIMULACIÓN LOCAL (Si el servidor no responde o estás haciendo pruebas rápidas)
     if (email === 'admin@unired.edu.co' && password === 'admin123') {
       localStorage.setItem('token', 'simulated_admin_jwt_token');
-      localStorage.setItem('userEmail', email);
-      localStorage.setItem('userRole', 'admin');
+      localStorage.setItem('user', JSON.stringify({ email, role: 'ADMIN' }));
       alert('¡Bienvenido Administrador! Redirigiendo al Panel de Moderación...');
       navigate('/admin');
     } else if (email && password) {
       localStorage.setItem('token', 'simulated_user_jwt_token');
-      localStorage.setItem('userEmail', email);
-      localStorage.setItem('userRole', 'user');
+      localStorage.setItem('user', JSON.stringify({ email, role: 'USER' }));
       alert('¡Inicio de sesión exitoso!');
       navigate('/');
     } else {
@@ -121,7 +122,7 @@ export default function Login() {
         <div><strong>Clave:</strong> admin123</div>
       </div>
 
-      <p style={{ textCenter: 'center', textAlign: 'center', fontSize: '0.875rem', color: '#64748b', marginTop: '20px' }}>
+      <p style={{ textAlign: 'center', fontSize: '0.875rem', color: '#64748b', marginTop: '20px' }}>
         ¿No tienes cuenta? <Link to="/register" style={{ color: '#2563eb', fontWeight: 'bold', textDecoration: 'none' }}>Regístrate aquí</Link>
       </p>
     </div>

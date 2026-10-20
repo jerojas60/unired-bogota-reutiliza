@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { MapPin, Search, Eye, CheckCircle, Package, X } from 'lucide-react';
 
 export default function Catalog() {
@@ -9,6 +10,7 @@ export default function Catalog() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [detailItem, setDetailItem] = useState(null);
   const [requested, setRequested] = useState(false);
+  const navigate = useNavigate();
 
   const bogotaLocalities = [
     'USAQUÉN', 'CHAPINERO', 'SANTA FE', 'SAN CRISTÓBAL', 'USME',
@@ -68,10 +70,34 @@ export default function Catalog() {
     return matchesSearch && matchesCategory && matchesLocality && isAvailable;
   });
 
-  const handleConfirmRequest = () => {
+  const handleRequestClick = (item) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Debes iniciar sesión o registrarte para poder solicitar y reservar un insumo escolar.');
+      navigate('/login');
+      return;
+    }
+    setSelectedItem(item);
+  };
+
+  const handleConfirmRequest = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      await fetch(`http://localhost:5000/api/items/${selectedItem._id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ estado: 'RESERVADO' })
+      });
+    } catch (err) {
+      console.log('Error de conexión');
+    }
+
     setRequested(true);
-    setItems(prevItems => prevItems.map(item => 
-      item._id === selectedItem._id ? { ...item, status: 'Reservado' } : item
+    setItems(prevItems => prevItems.map(i => 
+      i._id === selectedItem._id ? { ...i, status: 'Reservado' } : i
     ));
 
     setTimeout(() => {
@@ -82,13 +108,11 @@ export default function Catalog() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Encabezado */}
       <div style={{ backgroundColor: '#1e3a8a', color: 'white', padding: '24px', borderRadius: '12px' }}>
         <h1 style={{ margin: 0, fontSize: '1.8rem' }}>Catálogo de Donaciones</h1>
         <p style={{ margin: '8px 0 0 0', color: '#bfdbfe' }}>Reutilización sostenible de uniformes y útiles escolares en Bogotá</p>
       </div>
 
-      {/* Barra de Búsqueda y Filtros con Texto Negrita Oscuro */}
       <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#f1f5f9', padding: '8px 12px', borderRadius: '6px', flex: '1 1 250px', border: '1px solid #cbd5e1' }}>
           <Search size={18} color="#334155" style={{ marginRight: '8px' }} />
@@ -116,7 +140,6 @@ export default function Catalog() {
         </select>
       </div>
 
-      {/* Grilla de Tarjetas */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
         {filteredItems.length > 0 ? (
           filteredItems.map((item) => (
@@ -144,7 +167,7 @@ export default function Catalog() {
                   <Eye size={16} /> Ver
                 </button>
                 <button 
-                  onClick={() => setSelectedItem(item)}
+                  onClick={() => handleRequestClick(item)}
                   style={{ flex: 2, backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
                 >
                   Solicitar Insumo
@@ -160,7 +183,6 @@ export default function Catalog() {
         )}
       </div>
 
-      {/* Modal 1: Vista Detallada de Imagen y Datos */}
       {detailItem && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.75)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', maxWidth: '500px', width: '90%', position: 'relative' }}>
@@ -174,16 +196,10 @@ export default function Catalog() {
             <p style={{ color: '#334155', fontSize: '0.95rem' }}><strong>Localidad:</strong> {detailItem.locality}</p>
             
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-              <button 
-                onClick={() => setDetailItem(null)} 
-                style={{ padding: '10px 18px', borderRadius: '6px', border: '1px solid #94a3b8', backgroundColor: '#e2e8f0', color: '#0f172a', fontWeight: 'bold', cursor: 'pointer' }}
-              >
+              <button onClick={() => setDetailItem(null)} style={{ padding: '10px 18px', borderRadius: '6px', border: '1px solid #94a3b8', backgroundColor: '#e2e8f0', color: '#0f172a', fontWeight: 'bold', cursor: 'pointer' }}>
                 Cerrar
               </button>
-              <button 
-                onClick={() => { setSelectedItem(detailItem); setDetailItem(null); }} 
-                style={{ padding: '10px 18px', borderRadius: '6px', border: 'none', backgroundColor: '#2563eb', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
-              >
+              <button onClick={() => { handleRequestClick(detailItem); setDetailItem(null); }} style={{ padding: '10px 18px', borderRadius: '6px', border: 'none', backgroundColor: '#2563eb', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>
                 Solicitar Este Insumo
               </button>
             </div>
@@ -191,7 +207,6 @@ export default function Catalog() {
         </div>
       )}
 
-      {/* Modal 2: Confirmación de Solicitud (Botón Cancelar / No Claramente Visible) */}
       {selectedItem && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.75)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', maxWidth: '420px', width: '90%' }}>
@@ -201,19 +216,11 @@ export default function Catalog() {
                 <p style={{ color: '#334155', fontSize: '0.95rem', lineHeight: '1.4' }}>
                   ¿Deseas solicitar <strong>{selectedItem.title}</strong>? El insumo se ocultará del catálogo público para evitar solicitudes duplicadas.
                 </p>
-                
-                {/* Botones de Confirmación con alto contraste */}
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
-                  <button 
-                    onClick={() => setSelectedItem(null)} 
-                    style={{ padding: '10px 18px', borderRadius: '6px', border: '1px solid #64748b', backgroundColor: '#f1f5f9', color: '#0f172a', fontWeight: 'bold', cursor: 'pointer' }}
-                  >
+                  <button onClick={() => setSelectedItem(null)} style={{ padding: '10px 18px', borderRadius: '6px', border: '1px solid #64748b', backgroundColor: '#f1f5f9', color: '#0f172a', fontWeight: 'bold', cursor: 'pointer' }}>
                     No, Cancelar
                   </button>
-                  <button 
-                    onClick={handleConfirmRequest} 
-                    style={{ padding: '10px 18px', borderRadius: '6px', border: 'none', backgroundColor: '#16a34a', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
-                  >
+                  <button onClick={handleConfirmRequest} style={{ padding: '10px 18px', borderRadius: '6px', border: 'none', backgroundColor: '#16a34a', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>
                     Sí, Confirmar Reserva
                   </button>
                 </div>

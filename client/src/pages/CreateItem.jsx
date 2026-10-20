@@ -23,10 +23,18 @@ export default function CreateItem() {
     'CIUDAD BOLÍVAR', 'SUMAPAZ'
   ];
 
-  // Convertir la imagen seleccionada localmente a vista previa
+  // Convertir la imagen seleccionada localmente a vista previa con validación de 5 MB
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      const maxSizeInBytes = 5 * 1024 * 1024; // 5 MB límite de la monografía
+      
+      if (file.size > maxSizeInBytes) {
+        alert("La imagen supera el límite de 5 MB. Por favor selecciona un archivo más ligero.");
+        e.target.value = null; // Limpiar el input
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result);
@@ -106,9 +114,9 @@ export default function CreateItem() {
           </select>
         </div>
 
-        {/* Subida de Foto Real */}
+        {/* Subida de Foto Real con control de 5MB */}
         <div>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '4px' }}>Foto Real del Insumo</label>
+          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '4px' }}>Foto Real del Insumo (Máx. 5 MB)</label>
           <div style={{ border: '2px dashed #cbd5e1', padding: '16px', borderRadius: '8px', textAlign: 'center', cursor: 'pointer', backgroundColor: '#f8fafc' }}>
             <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} id="file-upload" />
             <label htmlFor="file-upload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
