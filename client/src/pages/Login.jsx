@@ -28,9 +28,11 @@ export default function Login() {
       
       // Guardamos las credenciales reales
       localStorage.setItem('token', data.token);
+      
+      // ✅ CORREGIDO: Leemos directo de "data" (no de "data.user")
       const userObj = {
-        email: data.user.email,
-        role: (data.user.role === 'admin' || data.user.email === 'admin@unired.edu.co') ? 'ADMIN' : 'USER'
+        email: data.email,
+        role: (data.rol === 'ADMIN' || data.email === 'admin@unired.edu.co') ? 'ADMIN' : 'USER'
       };
       localStorage.setItem('user', JSON.stringify(userObj));
 

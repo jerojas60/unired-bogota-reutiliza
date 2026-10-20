@@ -4,7 +4,7 @@ import { UserPlus, Mail, Lock, User } from 'lucide-react';
 
 export default function Register() {
   const [formData, setFormData] = useState({
-    name: '',
+    nombre: '', // ✅ Cambiado de "name" a "nombre" para que coincida con el backend
     email: '',
     password: ''
   });
@@ -16,28 +16,25 @@ export default function Register() {
     setError('');
 
     try {
-      // Conexión al backend de Express
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      // ✅ Apuntando a la URL correcta de tu backend (puedes cambiarlo por tu variable de entorno si la usas)
+      const response = await fetch('https://unired-backend.onrender.com/api/users/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
 
-      if (response.ok) {
-        alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
-        navigate('/login');
-        return;
-      }
-    } catch (err) {
-      console.log('Servidor backend offline, simulando registro local...');
-    }
+      const data = await response.json();
 
-    // Registro simulado si el backend no responde
-    if (formData.email && formData.password) {
-      alert('¡Cuenta registrada con éxito! Ya puedes iniciar sesión.');
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al registrarse.');
+      }
+
+      alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
       navigate('/login');
-    } else {
-      setError('Por favor diligencia todos los campos requeridos.');
+      return;
+
+    } catch (err) {
+      setError(err.message || 'No se pudo conectar con el servidor.');
     }
   };
 
@@ -66,7 +63,7 @@ export default function Register() {
               type="text" 
               required 
               placeholder="Ej: Camilo Torres" 
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              onChange={(e) => setFormData({...formData, nombre: e.target.value})}
               style={{ width: '100%', padding: '10px 0', border: 'none', background: 'transparent', outline: 'none', color: '#0f172a', fontSize: '0.9rem' }}
             />
           </div>
