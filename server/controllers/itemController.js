@@ -160,4 +160,4 @@ const updateItemStatus = async (req, res) => {
   }
 };
 
-v(module.exports = { createItem, getItems, getItemById, updateItemStatus };
+module.exports = { createItem, getItems, getItemById, updateItemStatus };
