@@ -7,10 +7,13 @@ const {
   updateItemStatus 
 } = require('../controllers/itemController');
 
+const auth = require('../middleware/auth');
+
 router.get('/', getItems);
 router.get('/:id', getItemById);
-router.post('/', createItem);
 
-router.put('/:id/status', updateItemStatus);
+router.post('/', auth, createItem);
+
+router.put('/:id/status', auth, updateItemStatus);
 
 module.exports = router;
