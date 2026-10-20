@@ -19,25 +19,28 @@ const ItemSchema = new Schema({
   },
   categoria: {
     type: String,
-    enum: ['UNIFORME', 'UTILES'],
-    required: true,
+    required: [true, 'La categoría es obligatoria'],
+    trim: true,
+    // Quitamos el enum estricta para que acepte cualquier texto que mande el frontend ("Uniforme", "Útiles", etc.)
   },
   detalles: {
     genero: {
       type: String,
-      enum: ['MASCULINO', 'FEMENINO', 'UNISEX'],
+      default: 'UNISEX',
     },
     talla: {
       type: String,
+      default: 'N/A',
     },
     estadoUso: {
       type: Number,
       min: 1,
       max: 5,
+      default: 3,
     },
     colegio: {
       type: String,
-      required: [true, 'El colegio es obligatorio'],
+      default: 'Comunidad UniRed', // Valor por defecto para que nunca falle si el formulario no lo envía
     },
   },
   fotos: {
@@ -47,6 +50,7 @@ const ItemSchema = new Schema({
   localidad: {
     type: String,
     required: [true, 'La localidad es obligatoria'],
+    trim: true,
   },
   estado: {
     type: String,
