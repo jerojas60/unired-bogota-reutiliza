@@ -13,48 +13,37 @@ export default function Login() {
     setError('');
 
     try {
-      // Intentar autenticar con la API en Node.js / Express
+      // Petición al backend real (en producción apuntará a tu servidor desplegado o URL correcta)
       const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Guardamos las credenciales unificadas para que el Navbar las reconozca de inmediato
-        localStorage.setItem('token', data.token);
-        const userObj = {
-          email: data.user.email,
-          role: (data.user.role === 'admin' || data.user.email === 'admin@unired.edu.co') ? 'ADMIN' : 'USER'
-        };
-        localStorage.setItem('user', JSON.stringify(userObj));
+      const data = await response.json();
 
-        if (userObj.role === 'ADMIN') {
-          navigate('/admin');
-        } else {
-          navigate('/');
-        }
-        return;
+      if (!response.ok) {
+        // Si el backend devuelve un error (correo no existe, contraseña mal, etc.)
+        throw new Error(data.message || 'Credenciales inválidas o usuario no registrado.');
       }
-    } catch (err) {
-      console.log('Servidor backend offline, activando modo simulación local...');
-    }
+      
+      // Guardamos las credenciales reales
+      localStorage.setItem('token', data.token);
+      const userObj = {
+        email: data.user.email,
+        role: (data.user.role === 'admin' || data.user.email === 'admin@unired.edu.co') ? 'ADMIN' : 'USER'
+      };
+      localStorage.setItem('user', JSON.stringify(userObj));
 
-    // SIMULACIÓN LOCAL (Si el servidor no responde o estás haciendo pruebas rápidas)
-    if (email === 'admin@unired.edu.co' && password === 'admin123') {
-      localStorage.setItem('token', 'simulated_admin_jwt_token');
-      localStorage.setItem('user', JSON.stringify({ email, role: 'ADMIN' }));
-      alert('¡Bienvenido Administrador! Redirigiendo al Panel de Moderación...');
-      navigate('/admin');
-    } else if (email && password) {
-      localStorage.setItem('token', 'simulated_user_jwt_token');
-      localStorage.setItem('user', JSON.stringify({ email, role: 'USER' }));
-      alert('¡Inicio de sesión exitoso!');
-      navigate('/');
-    } else {
-      setError('Por favor ingresa un correo y contraseña válidos.');
+      if (userObj.role === 'ADMIN') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+
+    } catch (err) {
+      // Muestra el error real devuelto por la base de datos o el servidor
+      setError(err.message || 'Error al conectar con el servidor. Verifica que esté encendido.');
     }
   };
 
@@ -82,7 +71,7 @@ export default function Login() {
             <input 
               type="email" 
               required 
-              placeholder="admin@unired.edu.co o tu correo" 
+              placeholder="tu-correo@unired.edu.co" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               style={{ width: '100%', padding: '10px 0', border: 'none', background: 'transparent', outline: 'none', color: '#0f172a', fontSize: '0.9rem' }}
@@ -113,13 +102,13 @@ export default function Login() {
         </button>
       </form>
 
-      {/* Nota de ayuda para pruebas rápidas de administrador */}
+      {/* Nota de ayuda para pruebas de administrador */}
       <div style={{ marginTop: '24px', padding: '12px', backgroundColor: '#f1f5f9', borderRadius: '8px', border: '1px dashed #94a3b8', fontSize: '0.8rem', color: '#475569' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}>
           <ShieldCheck size={16} color="#d97706" /> Credenciales de Administrador:
         </div>
         <div><strong>Correo:</strong> admin@unired.edu.co</div>
-        <div><strong>Clave:</strong> admin123</div>
+        <div><strong>Clave:</strong> Configurada en tu base de datos / entorno</div>
       </div>
 
       <p style={{ textAlign: 'center', fontSize: '0.875rem', color: '#64748b', marginTop: '20px' }}>
