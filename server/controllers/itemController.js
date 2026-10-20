@@ -77,23 +77,24 @@ const getItems = async (req, res) => {
       .populate('beneficiarioId', 'nombre email')
       .sort({ createdAt: -1 });
 
-    // 🛠️ Mapeamos cada documento para proveer 'title' y 'category' compatibles con el frontend
-    const itemsFormateados = items.map(item => ({
-      _id: item._id,
-      title: item.titulo,          // <-- Soluciona el error .toLowerCase() en el frontend
-      titulo: item.titulo,
-      category: item.categoria,
-      categoria: item.categoria,
-      localidad: item.localidad,
-      descripcion: item.descripcion,
-      image: item.fotos && item.fotos.length > 0 ? item.fotos[0] : '',
-      fotos: item.fotos,
-      estado: item.estado,
-      detalles: item.detalles,
-      donanteId: item.donanteId,
-      beneficiarioId: item.beneficiarioId,
-      createdAt: item.createdAt
-    }));
+
+  const itemsFormateados = items.map(item => ({
+  _id: item._id,
+  title: item.titulo,
+  titulo: item.titulo,
+  category: item.categoria,
+  categoria: item.categoria,
+  localidad: item.localidad,
+  descripcion: item.descripcion,
+  talla: item.detalles?.talla || 'N/A', // <-- AGREGAR ESTO para que el frontend lo lea fácil
+  image: item.fotos && item.fotos.length > 0 ? item.fotos[0] : '',
+  fotos: item.fotos,
+  estado: item.estado,
+  detalles: item.detalles,
+  donanteId: item.donanteId,
+  beneficiarioId: item.beneficiarioId,
+  createdAt: item.createdAt
+}));
 
     return res.status(200).json(itemsFormateados);
   } catch (error) {

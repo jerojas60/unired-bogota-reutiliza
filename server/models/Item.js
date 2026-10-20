@@ -17,11 +17,16 @@ const ItemSchema = new Schema({
     required: [true, 'El título es obligatorio'],
     trim: true,
   },
+  descripcion: { 
+    type: String,
+    default: '',
+    trim: true,
+  },
   categoria: {
     type: String,
     required: [true, 'La categoría es obligatoria'],
     trim: true,
-    // Quitamos el enum estricta para que acepte cualquier texto que mande el frontend ("Uniforme", "Útiles", etc.)
+  
   },
   detalles: {
     genero: {
