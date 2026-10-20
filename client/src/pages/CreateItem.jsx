@@ -44,10 +44,11 @@ export default function CreateItem() {
     }
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/api/items', {
+   
+      const response = await fetch('https://unired-backend.onrender.com/api/items', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,11 +57,17 @@ export default function CreateItem() {
         body: JSON.stringify(formData)
       });
 
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al registrar el insumo.');
+      }
+
       alert('¡Insumo registrado! Se envió a revisión del Administrador antes de publicarse en el catálogo.');
       navigate('/');
     } catch (err) {
-      alert('Insumo guardado localmente para revisión.');
-      navigate('/');
+      console.error(err);
+      alert('Error: ' + (err.message || 'No se pudo conectar con el servidor.'));
     }
   };
 

@@ -102,12 +102,12 @@ export default function Login() {
         </button>
       </form>
 
-      <div style={{ marginTop: '24px', padding: '12px', backgroundColor: '#f1f5f9', borderRadius: '8px', border: '1px dashed #94a3b8', fontSize: '0.8rem', color: '#475569' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}>
-          <ShieldCheck size={16} color="#d97706" /> Credenciales de Administrador:
+      <div style={{ marginTop: '24px', padding: '12px', backgroundColor: '#fef3c7', borderRadius: '8px', border: '1px dashed #f59e0b', fontSize: '0.8rem', color: '#92400e' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold', color: '#b45309', marginBottom: '4px' }}>
+          <ShieldCheck size={16} color="#d97706" /> Acceso Rápido para Jurados (Admin):
         </div>
         <div><strong>Correo:</strong> admin@unired.edu.co</div>
-        <div><strong>Clave:</strong> Configurada en tu base de datos / entorno</div>
+        <div><strong>Clave:</strong> Admin123*</div>
       </div>
 
       <p style={{ textAlign: 'center', fontSize: '0.875rem', color: '#64748b', marginTop: '20px' }}>
