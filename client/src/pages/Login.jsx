@@ -13,8 +13,8 @@ export default function Login() {
     setError('');
 
     try {
-      // Petición al backend real (en producción apuntará a tu servidor desplegado o URL correcta)
-      const response = await fetch('https://unired-backend.onrender.com/api/auth/login', {
+      // Petición corregida apuntando a la ruta de usuarios en Render
+      const response = await fetch('https://unired-backend.onrender.com/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -23,7 +23,6 @@ export default function Login() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Si el backend devuelve un error (correo no existe, contraseña mal, etc.)
         throw new Error(data.message || 'Credenciales inválidas o usuario no registrado.');
       }
       
@@ -42,8 +41,7 @@ export default function Login() {
       }
 
     } catch (err) {
-      // Muestra el error real devuelto por la base de datos o el servidor
-      setError(err.message || 'Error al conectar con el servidor. Verifica que esté encendido.');
+      setError(err.message || 'Credenciales inválidas o usuario no registrado.');
     }
   };
 
@@ -102,7 +100,6 @@ export default function Login() {
         </button>
       </form>
 
-      {/* Nota de ayuda para pruebas de administrador */}
       <div style={{ marginTop: '24px', padding: '12px', backgroundColor: '#f1f5f9', borderRadius: '8px', border: '1px dashed #94a3b8', fontSize: '0.8rem', color: '#475569' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}>
           <ShieldCheck size={16} color="#d97706" /> Credenciales de Administrador:
