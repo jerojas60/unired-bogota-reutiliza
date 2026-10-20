@@ -4,11 +4,12 @@ const DonationTrace = require('../models/DonationTrace');
 // @route POST /api/items
 const createItem = async (req, res) => {
   try {
-    const { title, category, size, locality, description, image } = req.body;
+    // 🛠️ Cambiamos 'locality' por 'localidad' para que coincida con el formulario
+    const { title, category, size, localidad, description, image } = req.body;
 
-    // Validamos los campos esenciales que sí envía tu frontend
-    if (!title || !category || !locality) {
-      return res.status(400).json({ message: 'Faltan campos obligatorios (title, category, locality)' });
+    // Validamos los campos esenciales usando la variable correcta
+    if (!title || !category || !localidad) {
+      return res.status(400).json({ message: 'Faltan campos obligatorios (title, category, localidad)' });
     }
 
     // Creamos el insumo adaptándolo a la estructura de la base de datos
@@ -18,12 +19,12 @@ const createItem = async (req, res) => {
       categoria: category,
       detalles: {
         talla: size || 'N/A',
-        colegio: 'Comunidad UniRed' // Valor por defecto para que no falle la validación antigua
+        colegio: 'Comunidad UniRed'
       },
       descripcion: description || '',
-      fotos: image ? [image] : [], // Convertimos la imagen en base64 a arreglo que espera el modelo
-      localidad,
-      estado: 'PENDIENTE' // Estado inicial para revisión del administrador
+      fotos: image ? [image] : [],
+      localidad, // Aquí ya usará la variable correcta
+      estado: 'PENDIENTE'
     });
 
     // Se crea automáticamente el primer registro de trazabilidad
