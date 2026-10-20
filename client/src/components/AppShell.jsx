@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, Package, UserPlus, LogIn, Heart, PlusCircle, ShieldCheck } from 'lucide-react';
+import { LogOut, Package, UserPlus, LogIn, Heart, PlusCircle, ShieldCheck, FileText, Gift } from 'lucide-react';
 
 export default function AppShell({ children }) {
   const navigate = useNavigate();
@@ -27,14 +27,25 @@ export default function AppShell({ children }) {
             <span>UniRed Bogotá Reutiliza</span>
           </Link>
           <nav style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            <Link to="/" style={{ color: 'white', textDecoration: 'none', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Link to="/catalog" style={{ color: 'white', textDecoration: 'none', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Package size={18} /> Catálogo
             </Link>
             
             {token && (
-              <Link to="/donar" style={{ backgroundColor: '#3b82f6', color: 'white', textDecoration: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <PlusCircle size={18} /> Donar
-              </Link>
+              <>
+                <Link to="/donar" style={{ backgroundColor: '#3b82f6', color: 'white', textDecoration: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <PlusCircle size={18} /> Donar
+                </Link>
+
+                {/* 🌟 ENLACES PARA EL USUARIO AUTENTICADO */}
+                <Link to="/mis-solicitudes" style={{ color: 'white', textDecoration: 'none', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <FileText size={18} /> Mis Solicitudes
+                </Link>
+
+                <Link to="/mis-donaciones" style={{ color: 'white', textDecoration: 'none', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Gift size={18} /> Mis Donaciones
+                </Link>
+              </>
             )}
 
             {/* SOLO VISIBLE SI ES ADMINISTRADOR */}

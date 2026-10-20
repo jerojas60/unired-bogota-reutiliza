@@ -6,21 +6,26 @@ import Catalog from './pages/Catalog';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import CreateItem from './pages/CreateItem';
-import AdminModeration from './pages/AdminModeration'; // <-- Actualizado aquí
+import AdminModeration from './pages/AdminModeration';
 import MyRequests from './pages/MyRequests';
+import MyDonations from './pages/MyDonations'; 
 
 export default function App() {
   return (
     <Router>
       <Routes>
-        {/* La ruta raíz '/' muestra tu Landing Page bonita e intacta */}
+        {/* La ruta raíz '/' muestra tu Landing Page */}
         <Route path="/" element={<Landing />} />
 
         {/* Las demás vistas con su estructura limpia */}
         <Route path="/catalog" element={<AppShell><Catalog /></AppShell>} />
         <Route path="/donar" element={<AppShell><CreateItem /></AppShell>} />
-        <Route path="/admin" element={<AppShell><AdminModeration /></AppShell>} /> {/* <-- Carga el panel moderno con 4 pestañas */}
+        <Route path="/admin" element={<AppShell><AdminModeration /></AppShell>} />
         <Route path="/mis-solicitudes" element={<AppShell><MyRequests /></AppShell>} />
+        
+        {/* 🌟 2. Añadimos la nueva ruta para Mis Donaciones */}
+        <Route path="/mis-donaciones" element={<AppShell><MyDonations /></AppShell>} />
+
         <Route path="/login" element={<AppShell><Login /></AppShell>} />
         <Route path="/register" element={<AppShell><Register /></AppShell>} />
       </Routes>
