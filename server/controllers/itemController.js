@@ -53,17 +53,23 @@ const getItems = async (req, res) => {
 
     const filtros = {};
 
-    // 1. Si la petición viene desde la vista "Mis Solicitudes" del Beneficiario
+    // 1. Si la petición viene desde "Mis Solicitudes"
     if (misSolicitudes === 'true') {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Debes iniciar sesión para ver tus solicitudes' });
+      }
       filtros.beneficiarioId = req.user._id;
     } 
-    // 2. Si la petición viene desde la vista "Mis Donaciones" del Donante
+    // 2. Si la petición viene desde "Mis Donaciones"
     else if (misDonaciones === 'true') {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Debes iniciar sesión para ver tus donaciones' });
+      }
       filtros.donanteId = req.user._id;
     }
-    // 3. Si la petición viene desde el panel de Moderación/Admin
+    // 3. Panel de Moderación
     else if (moderacion === 'true') {
-      if (estado) filtros.estado = estado; // Permite filtrar por PENDIENTE, RECHAZADO, RESERVADO, ENTREGADO, etc.
+      if (estado) filtros.estado = estado;
     } 
     // 4. Catálogo público por defecto
     else {
@@ -72,7 +78,6 @@ const getItems = async (req, res) => {
       if (categoria) filtros.categoria = categoria;
       if (talla) filtros['detalles.talla'] = talla;
       
-      // Si no especifican estado en el catálogo, muestra los que están listos para solicitar
       filtros.estado = estado || 'DISPONIBLE';
     }
 
@@ -81,7 +86,6 @@ const getItems = async (req, res) => {
       .populate('beneficiarioId', 'nombre email')
       .sort({ createdAt: -1 });
 
-    // Mapeamos cada documento asegurando compatibilidad total de propiedades con el frontend
     const itemsFormateados = items.map(item => ({
       _id: item._id,
       id: item._id,

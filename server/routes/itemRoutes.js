@@ -7,13 +7,13 @@ const {
   updateItemStatus 
 } = require('../controllers/itemController');
 
-// 🛠️ Importamos 'protect' correctamente entre llaves
-const { protect } = require('../middleware/auth');
+const { protect, protectOptional } = require('../middleware/auth');
 
-router.get('/', getItems);
+// Catálogo público + vistas del usuario autenticado
+router.get('/', protectOptional, getItems);
 router.get('/:id', getItemById);
 
-// Usamos protect en las rutas que necesitan usuario autenticado
+// Rutas estrictamente protegidas
 router.post('/', protect, createItem);
 router.put('/:id/status', protect, updateItemStatus);
 
