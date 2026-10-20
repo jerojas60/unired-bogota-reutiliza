@@ -11,7 +11,6 @@ const registerUser = async (req, res) => {
   try {
     const { nombre, email, password, rol, telefono, ubicacion, institucionEducativa } = req.body;
 
-  
     if (!nombre || !email || !password) {
       return res.status(400).json({ message: 'Faltan campos obligatorios (nombre, email, password)' });
     }
@@ -24,13 +23,14 @@ const registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
+    // Creamos el usuario asegurando valores por defecto si no los envías
     const user = await User.create({
       nombre,
       email,
       passwordHash,
-      rol: rol || 'user', // Por defecto asigna el rol 'user' si no viene especificado
+      rol: rol || 'DONANTE',
       telefono: telefono || '',
-      ubicacion: ubicacion || { localidad: 'Bogotá' }, // Valor por defecto opcional
+      ubicacion: ubicacion || { localidad: 'Bogotá' }, // Evita que falle si no mandas ubicación
       institucionEducativa: institucionEducativa || '',
     });
 
@@ -52,7 +52,11 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email: email?.toLowerCase() });
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Faltan email o password' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }

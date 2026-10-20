@@ -7,6 +7,11 @@ const ItemSchema = new Schema({
     ref: 'User',
     required: [true, 'El donante es obligatorio'],
   },
+  beneficiarioId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    default: null, // Guarda el ID del estudiante que solicita/reserva el insumo
+  },
   titulo: {
     type: String,
     required: [true, 'El título es obligatorio'],
@@ -45,13 +50,24 @@ const ItemSchema = new Schema({
   },
   estado: {
     type: String,
-    enum: ['DISPONIBLE', 'RESERVADO', 'ENTREGADO'],
-    default: 'DISPONIBLE',
+    enum: ['PENDIENTE', 'DISPONIBLE', 'RECHAZADO', 'RESERVADO', 'ENTREGADO'],
+    default: 'PENDIENTE', // Inicia en PENDIENTE para que pase primero por la moderación del admin
+  },
+  comentarioRechazo: {
+    type: String,
+    default: '', // Motivo que escribe el admin si rechaza el insumo
+  },
+  comentarioEntrega: {
+    type: String,
+    default: '', // Instrucciones del donante sobre dónde y cuándo recoger
   },
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
+
+// ÍNDICE COMPUESTO: Optimiza las consultas del catálogo por filtros combinados
+ItemSchema.index({ localidad: 1, 'detalles.colegio': 1, estado: 1 });
 
 module.exports = mongoose.model('Item', ItemSchema);
