@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PackagePlus, Upload, Image as ImageIcon } from 'lucide-react';
+import { PackagePlus, Upload, MapPin } from 'lucide-react';
 
 export default function CreateItem() {
   const [formData, setFormData] = useState({
@@ -10,6 +10,7 @@ export default function CreateItem() {
     locality: 'SUBA',
     description: '',
     image: '',
+    instruccionesRecogida: '', // 🌟 NUEVO CAMPO
     status: 'Pendiente' // Queda pendiente de aprobación por el admin
   });
   const [preview, setPreview] = useState('');
@@ -27,7 +28,7 @@ export default function CreateItem() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const maxSizeInBytes = 5 * 1024 * 1024; // 5 MB límite de la monografía
+      const maxSizeInBytes = 5 * 1024 * 1024; // 5 MB límite
       
       if (file.size > maxSizeInBytes) {
         alert("La imagen supera el límite de 5 MB. Por favor selecciona un archivo más ligero.");
@@ -44,10 +45,9 @@ export default function CreateItem() {
     }
   };
 
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-   
       const response = await fetch('https://unired-backend.onrender.com/api/items', {
         method: 'POST',
         headers: {
@@ -119,6 +119,22 @@ const handleSubmit = async (e) => {
               <option key={loc} value={loc}>{loc}</option>
             ))}
           </select>
+        </div>
+
+        {/*  Punto e Instrucciones de Recogida */}
+        <div>
+          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '4px', color: '#1e40af' }}>
+            📍 Instrucciones de Recogida / Medio de Contacto
+          </label>
+          <textarea 
+            rows="2" 
+            placeholder="Ej: Recoger en la portería de la Calle 100 #15-20 o comunicarse al WhatsApp 3001234567..."
+            style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #93c5fd', backgroundColor: '#eff6ff', boxSizing: 'border-box' }} 
+            onChange={(e) => setFormData({...formData, instruccionesRecogida: e.target.value})}
+          />
+          <small style={{ fontSize: '0.75rem', color: '#64748b' }}>
+            Esta información solo la podrá ver la persona cuando su solicitud sea aprobada.
+          </small>
         </div>
 
         {/* Subida de Foto Real con control de 5MB */}

@@ -4,27 +4,28 @@ const DonationTrace = require('../models/DonationTrace');
 // @route POST /api/items
 const createItem = async (req, res) => {
   try {
-    // Capturamos los campos permitiendo que vengan con el nombre en inglés o en español
     const title = req.body.title || req.body.titulo;
     const category = req.body.category || req.body.categoria;
     const size = req.body.size || req.body.talla;
     const localidad = req.body.localidad || req.body.locality;
     const description = req.body.description || req.body.descripcion;
     const image = req.body.image || req.body.foto;
+    
 
-    // Validamos los campos esenciales
+    const instruccionesRecogida = req.body.instruccionesRecogida || req.body.puntoRecogida || '';
+
     if (!title || !category || !localidad) {
       return res.status(400).json({ message: 'Faltan campos obligatorios (title, category, localidad)' });
     }
 
-    // Creamos el insumo en la base de datos
     const item = await Item.create({
       donanteId: req.user._id,
       titulo: title,
       categoria: category,
       detalles: {
         talla: size || 'N/A',
-        colegio: 'Comunidad UniRed'
+        colegio: 'Comunidad UniRed',
+        instruccionesRecogida: instruccionesRecogida // 🌟 Se guarda aquí dentro de detalles
       },
       descripcion: description || '',
       fotos: image ? [image] : [],
@@ -32,7 +33,6 @@ const createItem = async (req, res) => {
       estado: 'PENDIENTE'
     });
 
-    // Se crea automáticamente el primer registro de trazabilidad
     await DonationTrace.create({
       itemId: item._id,
       donanteId: req.user._id,
