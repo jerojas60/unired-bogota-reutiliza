@@ -19,7 +19,7 @@ export default function AdminModeration() {
       return;
     }
 
-    fetch(`http://https://unired-backend.onrender.com/api/items?moderacion=true&estado=${filterState}`, {
+    fetch(`https://unired-backend.onrender.com/api/items?moderacion=true&estado=${filterState}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -43,7 +43,7 @@ export default function AdminModeration() {
   const handleApprove = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://https://unired-backend.onrender.com/api/items/${id}/status`, {
+      const res = await fetch(`https://unired-backend.onrender.com/api/items/${id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ export default function AdminModeration() {
 
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://https://unired-backend.onrender.com/api/items/${rejectingItem._id}/status`, {
+      const res = await fetch(`https://unired-backend.onrender.com/api/items/${rejectingItem._id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

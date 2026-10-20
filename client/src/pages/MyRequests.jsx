@@ -17,7 +17,7 @@ export default function MyRequests() {
     }
 
     // Petición al backend para obtener los insumos del usuario logueado
-    fetch('http://https://unired-backend.onrender.com/api/items?misSolicitudes=true', {
+    fetch('https://unired-backend.onrender.com/api/items?misSolicitudes=true', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
